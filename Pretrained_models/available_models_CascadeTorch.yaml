@@ -1,7 +1,7 @@
 ###
 ### Download links for available models
 ###
-### Last update: 2026-02-07
+### Last update: 2026-05-22
 ###
 
 GC8f_EXC_100Hz_smoothing10ms:
@@ -18,6 +18,9 @@ GC8f_EXC_30Hz_smoothing25ms_high_noise:
   Info: ''
 GC8f_EXC_30Hz_smoothing50ms_high_noise:
   Link: https://drive.switch.ch/index.php/s/qlwtfiZXSojPoER/download
+  Info: ''
+GC8f_EXC_20Hz_smoothing40ms_high_noise:
+  Link: https://drive.switch.ch/index.php/s/3EoMrG7LV98YcQZ/download
   Info: ''
 GC8f_EXC_7.5Hz_smoothing100ms_high_noise:
   Link: https://drive.switch.ch/index.php/s/0xkjQyXSdCMkvPG/download
