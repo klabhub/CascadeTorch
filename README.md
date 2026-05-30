@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/241174650.svg)](https://zenodo.org/badge/latestdoi/241174650)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.241174650-blue.svg)](https://zenodo.org/badge/latestdoi/241174650)
 [![License](https://img.shields.io/badge/License-GPL--3.0-brightgreen)](https://github.com/PTRRupprecht/CascadeTorch/tree/master/LICENSE)
 [![Size](https://img.shields.io/github/repo-size/PTRRupprecht/CascadeTorch?style=plastic)](https://img.shields.io/github/repo-size/PTRRupprecht/CascadeTorch?style=plastic)
 [![Language](https://img.shields.io/github/languages/top/PTRRupprecht/CascadeTorch?style=plastic)](https://github.com/PTRRupprecht/CascadeTorch)
