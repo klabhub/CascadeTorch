@@ -24,9 +24,15 @@ Import python packages
 """
 
 import os, sys
-if 'Demo scripts' in os.getcwd():
-    sys.path.append( os.path.abspath('..') ) # add parent directory to path for imports
-    os.chdir('..')  # change to main directory
+
+# Suppress all traceback information
+sys.tracebacklimit = 1
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+if os.getcwd() != PROJECT_ROOT:
+    os.chdir(PROJECT_ROOT)
 print('Current working directory: {}'.format( os.getcwd() ))
 
 from cascade2p import checks

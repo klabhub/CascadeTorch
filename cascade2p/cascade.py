@@ -37,6 +37,27 @@ import warnings
 from . import config, utils
 
 
+def _read_url_bytes(url):
+    from urllib.request import urlopen
+    import ssl
+
+    try:
+        with urlopen(url) as response:
+            return response.read()
+    except ssl.SSLError as exc:
+        try:
+            import certifi
+        except ImportError as import_exc:
+            raise RuntimeError(
+                "HTTPS download failed because Python could not load a valid CA bundle. "
+                "Install the 'certifi' package in this environment to enable secure model downloads."
+            ) from import_exc
+
+        context = ssl.create_default_context(cafile=certifi.where())
+        with urlopen(url, context=context) as response:
+            return response.read()
+
+
 def train_model(
     model_name, model_folder="Pretrained_models", ground_truth_folder="Ground_truth"
 ):
@@ -647,13 +668,11 @@ def download_model(
 
     """
 
-    from urllib.request import urlopen
     import zipfile
 
     # Download the current yaml file with information about available models first
     new_file = os.path.join(model_folder, "available_models_CascadeTorch.yaml")
-    with urlopen(info_file_link) as response:
-        text = response.read()
+    text = _read_url_bytes(info_file_link)
 
     with open(new_file, "wb") as f:
         f.write(text)
@@ -685,8 +704,7 @@ def download_model(
 
     # download and save .zip file of model
     download_link = download_config[model_name]["Link"]
-    with urlopen(download_link) as response:
-        data = response.read()
+    data = _read_url_bytes(download_link)
 
     tmp_file = os.path.join(model_folder, "tmp_zipped_model.zip")
     with open(tmp_file, "wb") as f:
