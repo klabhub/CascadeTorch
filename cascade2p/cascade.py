@@ -248,8 +248,8 @@ def train_model(
             
             loss_fn = nn.MSELoss()
 
-            cfg["nr_of_epochs"] = np.minimum(
-                cfg["nr_of_epochs"], int(10 * np.floor(5e6 / len(X)))
+            nr_of_epochs = min(
+                int(cfg["nr_of_epochs"]), int(10 * np.floor(5e6 / len(X)))
             )
 
             X_tensor = torch.FloatTensor(X).to(device)
@@ -259,7 +259,7 @@ def train_model(
             dataloader = torch.utils.data.DataLoader(dataset, batch_size=cfg["batch_size"], shuffle=True)
 
             model.train()
-            for epoch in range(cfg["nr_of_epochs"]):
+            for epoch in range(nr_of_epochs):
                 epoch_loss = 0.0
                 for batch_X, batch_Y in dataloader:
                     optimizer.zero_grad()
@@ -270,7 +270,7 @@ def train_model(
                     epoch_loss += loss.item()
                 
                 if cfg["verbose"]:
-                    print(f"Epoch {epoch+1}/{cfg['nr_of_epochs']}, Loss: {epoch_loss/len(dataloader):.4f}")
+                    print(f"Epoch {epoch+1}/{nr_of_epochs}, Loss: {epoch_loss/len(dataloader):.4f}")
 
             # save model
                 torch.save(model.state_dict(), file_path)
