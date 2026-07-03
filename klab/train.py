@@ -67,6 +67,32 @@ checks.check_packages()
 from cascade2p import cascade, config
 
 
+def load_model_config(config_path):
+    try:
+        model_config = config.read_config(config_path)
+    except Exception as exc:
+        return None, 'config.yaml could not be read ({})'.format(exc)
+
+    if model_config is None:
+        return None, "config.yaml is empty"
+
+    if not isinstance(model_config, dict):
+        return None, 'config.yaml has unexpected type "{}"'.format(
+            type(model_config).__name__
+        )
+
+    missing_keys = [
+        key for key in ["noise_levels", "ensemble_size", "training_finished"]
+        if key not in model_config
+    ]
+    if missing_keys:
+        return None, "config.yaml is missing keys: {}".format(
+            ", ".join(missing_keys)
+        )
+
+    return model_config, None
+
+
 def get_expected_model_files(model_config):
     return [
         "Model_NoiseLevel_{}_Ensemble_{}.pth".format(int(noise_level), ensemble)
@@ -81,7 +107,10 @@ def model_training_finished(model_path):
     if not os.path.isfile(config_path):
         return False, "config.yaml is missing"
 
-    model_config = config.read_config(config_path)
+    model_config, config_error = load_model_config(config_path)
+    if config_error is not None:
+        return False, config_error
+
     missing_model_files = [
         file_name
         for file_name in get_expected_model_files(model_config)
@@ -137,6 +166,15 @@ for cfg in cfgs:
                 model_name, os.path.abspath(model_path)
             )
         )
+    else:
+        model_config, config_error = load_model_config(config_path)
+        if config_error is not None:
+            config.write_config(cfg, config_path)
+            print(
+                '\nRebuilt config for model "{}" because {}.'.format(
+                    model_name, config_error
+                )
+            )
 
     print('\nTo load this model, use the model name "{}"'.format(model_name))
 
