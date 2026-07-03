@@ -69,7 +69,7 @@ from cascade2p import cascade, config
 
 def get_expected_model_files(model_config):
     return [
-        "Model_NoiseLevel_{}_Ensemble_{}.h5".format(int(noise_level), ensemble)
+        "Model_NoiseLevel_{}_Ensemble_{}.pth".format(int(noise_level), ensemble)
         for noise_level in model_config["noise_levels"]
         for ensemble in range(model_config["ensemble_size"])
     ]
@@ -82,13 +82,6 @@ def model_training_finished(model_path):
         return False, "config.yaml is missing"
 
     model_config = config.read_config(config_path)
-    training_finished = str(model_config.get("training_finished", "")).strip().lower()
-
-    if training_finished != "yes":
-        return False, 'training_finished is "{}"'.format(
-            model_config.get("training_finished", "")
-        )
-
     missing_model_files = [
         file_name
         for file_name in get_expected_model_files(model_config)
@@ -98,6 +91,13 @@ def model_training_finished(model_path):
     if missing_model_files:
         return False, "{} trained model files are missing".format(
             len(missing_model_files)
+        )
+
+    training_finished = str(model_config.get("training_finished", "")).strip().lower()
+
+    if training_finished != "yes":
+        return False, 'training_finished is "{}" but all trained model files exist'.format(
+            model_config.get("training_finished", "")
         )
 
     return True, "training_finished is Yes and all trained model files exist"

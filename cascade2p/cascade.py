@@ -155,13 +155,30 @@ def train_model(
         raise Exception(m)
 
     start = time.time()
+
+    pending_model_files = []
+    for noise_level in cfg["noise_levels"]:
+        for ensemble in range(cfg["ensemble_size"]):
+            file_name = "Model_NoiseLevel_{}_Ensemble_{}.pth".format(
+                int(noise_level), ensemble
+            )
+            file_path = os.path.join(model_path, file_name)
+            if not os.path.isfile(file_path):
+                pending_model_files.append(file_name)
+
+    if len(pending_model_files) == 0:
+        cfg["training_finished"] = "Yes"
+        config.write_config(cfg, os.path.join(model_path, "config.yaml"))
+        print("All ensemble weights already exist. Nothing to train.")
+        return
+
     # Update model fitting status
     cfg["training_finished"] = "Running"
     config.write_config(cfg, os.path.join(model_path, "config.yaml"))
 
-    nr_model_fits = len(cfg["noise_levels"]) * cfg["ensemble_size"]
+    nr_model_fits = len(pending_model_files)
     print("Fitting a total of {} models:".format(nr_model_fits))
-  
+
     curr_model_nr = 0
 
     print(training_folders[0])
@@ -171,6 +188,15 @@ def train_model(
     for noise_level in cfg["noise_levels"]:
         for ensemble in range(cfg["ensemble_size"]):
             # train 'ensemble_size' (e.g. 5) models for each noise level
+
+            file_name = "Model_NoiseLevel_{}_Ensemble_{}.pth".format(
+                int(noise_level), ensemble
+            )
+            file_path = os.path.join(model_path, file_name)
+
+            if os.path.isfile(file_path):
+                print("Skipping existing model:", file_name)
+                continue
 
             curr_model_nr += 1
             print(
@@ -247,15 +273,12 @@ def train_model(
                     print(f"Epoch {epoch+1}/{cfg['nr_of_epochs']}, Loss: {epoch_loss/len(dataloader):.4f}")
 
             # save model
-            file_name = "Model_NoiseLevel_{}_Ensemble_{}.pth".format(
-                int(noise_level), ensemble
-            )
-            torch.save(model.state_dict(), os.path.join(model_path, file_name))
+                torch.save(model.state_dict(), file_path)
             print("Saved model:", file_name)
 
     # Update model fitting status
-    # cfg['training_finished'] = 'Yes'
-    # config.write_config(cfg, os.path.join( model_path, 'config.yaml' ))
+            cfg["training_finished"] = "Yes"
+            config.write_config(cfg, os.path.join(model_path, "config.yaml"))
 
     print("\n\nDone!")
     print("Runtime: {:.0f} min".format((time.time() - start) / 60))
