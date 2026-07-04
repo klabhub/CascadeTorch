@@ -39,12 +39,26 @@ from . import config, utils
 
 def _read_url_bytes(url):
     from urllib.request import urlopen
+    from urllib.error import URLError
     import ssl
+
+    def _is_ssl_verification_error(exc):
+        if isinstance(exc, ssl.SSLError):
+            return True
+
+        if isinstance(exc, URLError):
+            reason = getattr(exc, "reason", None)
+            return isinstance(reason, ssl.SSLError)
+
+        return False
 
     try:
         with urlopen(url) as response:
             return response.read()
-    except ssl.SSLError as exc:
+    except Exception as exc:
+        if not _is_ssl_verification_error(exc):
+            raise
+
         try:
             import certifi
         except ImportError as import_exc:
@@ -53,9 +67,30 @@ def _read_url_bytes(url):
                 "Install the 'certifi' package in this environment to enable secure model downloads."
             ) from import_exc
 
-        context = ssl.create_default_context(cafile=certifi.where())
-        with urlopen(url, context=context) as response:
-            return response.read()
+        try:
+            context = ssl.create_default_context(cafile=certifi.where())
+            with urlopen(url, context=context) as response:
+                return response.read()
+        except Exception as certifi_exc:
+            if not _is_ssl_verification_error(certifi_exc):
+                raise
+
+        allow_insecure_ssl = os.environ.get("CASCADE_ALLOW_INSECURE_SSL", "").lower()
+        if allow_insecure_ssl in {"1", "true", "yes"}:
+            warnings.warn(
+                "Falling back to an unverified SSL context because CASCADE_ALLOW_INSECURE_SSL is enabled. "
+                "Use this only on trusted networks.",
+                RuntimeWarning,
+            )
+            insecure_context = ssl._create_unverified_context()
+            with urlopen(url, context=insecure_context) as response:
+                return response.read()
+
+        raise RuntimeError(
+            "HTTPS download failed due to certificate verification. "
+            "If your cluster uses a private CA, set SSL_CERT_FILE or REQUESTS_CA_BUNDLE to the correct CA bundle. "
+            "As a last resort on a trusted network, set CASCADE_ALLOW_INSECURE_SSL=1 to bypass certificate checks for model downloads."
+        ) from exc
 
 
 def train_model(
