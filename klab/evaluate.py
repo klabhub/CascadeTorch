@@ -19,7 +19,7 @@ Configure evaluation
 
 """
 
-MODEL_NAME = "GC8_EXC_30Hz_smoothing25ms_high_noise"
+MODEL_NAME = "Global_EXC_30Hz_smoothing25ms"
 MODEL_FOLDER = "Pretrained_models"
 GROUND_TRUTH_FOLDER = "Ground_truth"
 
@@ -48,12 +48,14 @@ import os
 import shutil
 import sys
 import tempfile
-
-if "Demo scripts" in os.getcwd():
-    sys.path.append(os.path.abspath(".."))
-    os.chdir("..")
-print("Current working directory: {}".format(os.getcwd()))
-
+sys.tracebacklimit = 1
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+if os.getcwd() != PROJECT_ROOT:
+    os.chdir(PROJECT_ROOT)
+print('Current working directory: {}'.format( os.getcwd() ))
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
