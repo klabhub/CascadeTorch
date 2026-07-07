@@ -4,5 +4,4 @@ __pycache__/
 .ipynb_checkpoints/
 *.eggs/
 *.egg-info/
-Pretrained_models/*
 model_evaluation/*
